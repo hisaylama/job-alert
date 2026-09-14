@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quant Job Alert — Hisay Lama</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0d1117;--ink2:#374151;--ink3:#6b7280;--ink4:#9ca3af;
+  --page:#f8f9fc;--panel:#ffffff;
+  --blue:#1d4ed8;--blue-l:#eff6ff;--blue-b:#bfdbfe;
+  --green:#065f46;--green-l:#ecfdf5;--green-b:#a7f3d0;
+  --amber:#92400e;--amber-l:#fffbeb;--amber-b:#fde68a;
+  --red:#991b1b;--red-l:#fef2f2;--red-b:#fecaca;
+  --purple:#4c1d95;--purple-l:#f5f3ff;--purple-b:#ddd6fe;
+  --border:#e5e7eb;--border2:#d1d5db;
+  --radius:10px;--r-sm:6px;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+body{font-family:var(--sans);background:var(--page);color:var(--ink);min-height:100vh;font-size:15px}
+
+.topbar{background:var(--ink);color:#f9fafb;padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-l{display:flex;align-items:center;gap:14px}
+.logo{font-family:var(--mono);font-size:.78rem;font-weight:600;letter-spacing:.05em;color:#f9fafb}
+.logo span{color:#a78bfa}
+.nav-date{font-family:var(--mono);font-size:.65rem;color:#6b7280}
+.topbar-r{display:flex;align-items:center;gap:10px}
+.btn-refresh{font-family:var(--mono);font-size:.68rem;font-weight:700;padding:5px 14px;border-radius:var(--r-sm);border:none;background:#7c3aed;color:#fff;cursor:pointer;letter-spacing:.03em;transition:background .12s}
+.btn-refresh:hover{background:#6d28d9}
+.btn-refresh:disabled{background:#374151;cursor:not-allowed}
+.btn-setup{font-family:var(--mono);font-size:.68rem;font-weight:700;padding:5px 12px;border-radius:var(--r-sm);border:1px solid #374151;background:transparent;color:#9ca3af;cursor:pointer}
+.btn-setup:hover{border-color:#a78bfa;color:#a78bfa}
+
+.profile{background:#1e293b;padding:8px 24px;display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.67rem;font-family:var(--mono);color:#94a3b8;border-bottom:1px solid #0d1117}
+.ptag{color:#c4b5fd}
+.ptag::before{content:'◆ ';font-size:.5rem}
+
+.layout{display:grid;grid-template-columns:220px 1fr;gap:20px;max-width:1140px;margin:0 auto;padding:24px 20px 60px}
+@media(max-width:720px){.layout{grid-template-columns:1fr}}
+
+.sidebar{display:flex;flex-direction:column;gap:14px}
+.sidebar-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+.sc-title{font-size:.68rem;font-weight:600;font-family:var(--mono);color:var(--ink3);letter-spacing:.04em;margin-bottom:10px;text-transform:uppercase}
+
+.filter-list{display:flex;flex-direction:column;gap:4px}
+.f-item{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:var(--r-sm);cursor:pointer;font-size:.78rem;color:var(--ink2);transition:background .1s;border:none;background:transparent;width:100%;text-align:left}
+.f-item:hover{background:var(--blue-l)}
+.f-item.on{background:#f5f3ff;color:#6d28d9;font-weight:600}
+.f-count{font-family:var(--mono);font-size:.65rem;background:var(--border);color:var(--ink3);padding:1px 6px;border-radius:10px}
+.f-item.on .f-count{background:#ddd6fe;color:#6d28d9}
+
+.firm-list{display:flex;flex-direction:column;gap:3px;max-height:240px;overflow-y:auto}
+.firm-item{display:flex;align-items:center;gap:7px;padding:4px 6px;border-radius:4px;cursor:pointer;font-size:.74rem;color:var(--ink2)}
+.firm-item:hover{background:var(--page)}
+.firm-item input{accent-color:#7c3aed;cursor:pointer;flex-shrink:0}
+
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:.73rem}
+.stat-label{color:var(--ink3)}
+.stat-val{font-family:var(--mono);font-weight:600;color:var(--ink)}
+
+.main-col{min-width:0}
+
+.status-bar{display:flex;align-items:center;gap:8px;font-size:.72rem;font-family:var(--mono);color:var(--ink3);margin-bottom:14px;flex-wrap:wrap}
+.sdot{width:7px;height:7px;border-radius:50%;background:#9ca3af;flex-shrink:0}
+.sdot.ok{background:#22c55e;animation:pls 1.8s infinite}
+.sdot.err{background:#ef4444}
+@keyframes pls{0%,100%{opacity:1}50%{opacity:.3}}
+
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.sort-sel{font-family:var(--mono);font-size:.68rem;padding:5px 10px;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--panel);color:var(--ink);cursor:pointer}
+.search-box{flex:1;min-width:140px;font-size:.8rem;padding:5px 12px;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--panel);color:var(--ink)}
+.search-box:focus{outline:none;border-color:#7c3aed}
+.result-count{font-family:var(--mono);font-size:.68rem;color:var(--ink3);white-space:nowrap}
+
+#board{display:flex;flex-direction:column;gap:12px}
+
+.jcard{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);border-left:4px solid #7c3aed;padding:16px 18px 13px;transition:box-shadow .15s,border-color .15s}
+.jcard:hover{box-shadow:0 3px 18px rgba(0,0,0,.07);border-color:var(--border2)}
+.jcard[data-type=risk]{border-left-color:#dc2626}
+.jcard[data-type=data]{border-left-color:#0891b2}
+.jcard[data-type=strat]{border-left-color:#059669}
+.jcard[data-type=ib]{border-left-color:#d97706}
+.jcard[data-type=quant]{border-left-color:#1d4ed8}
+
+.jcard-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.jt{font-weight:600;font-size:.9rem;color:var(--ink);line-height:1.3}
+.jf{font-size:.71rem;color:var(--ink3);font-family:var(--mono);margin-top:2px}
+.fit-badge{font-family:var(--mono);font-size:.6rem;font-weight:700;padding:3px 9px;border-radius:12px;white-space:nowrap;flex-shrink:0;letter-spacing:.03em}
+.fH{background:var(--green-l);color:var(--green);border:1px solid var(--green-b)}
+.fM{background:var(--amber-l);color:var(--amber);border:1px solid var(--amber-b)}
+.fL{background:var(--purple-l);color:var(--purple);border:1px solid var(--purple-b)}
+
+.jmeta{display:flex;flex-wrap:wrap;gap:4px 14px;margin-bottom:10px}
+.jmi{font-size:.69rem;color:var(--ink3);font-family:var(--mono)}
+.jmi.new{color:#7c3aed;font-weight:600}
+
+.jwhy{font-size:.76rem;color:var(--ink2);line-height:1.65;border-top:1px solid var(--border);padding-top:9px}
+.jwhy-lbl{font-family:var(--mono);font-size:.58rem;font-weight:700;color:#7c3aed;display:block;margin-bottom:4px;letter-spacing:.06em}
+
+.jactions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+.btn-portal{font-family:var(--mono);font-size:.65rem;font-weight:700;padding:5px 13px;background:#7c3aed;color:#fff;border:none;border-radius:var(--r-sm);cursor:pointer;text-decoration:none;display:inline-block}
+.btn-portal:hover{background:#6d28d9}
+.btn-linkedin{font-family:var(--mono);font-size:.65rem;font-weight:700;padding:5px 13px;background:#0a66c2;color:#fff;border:none;border-radius:var(--r-sm);cursor:pointer;text-decoration:none;display:inline-block}
+.btn-linkedin:hover{background:#084d99}
+.btn-save{font-family:var(--mono);font-size:.65rem;font-weight:600;padding:5px 11px;background:transparent;color:var(--ink3);border:1px solid var(--border2);border-radius:var(--r-sm);cursor:pointer}
+.btn-save:hover{border-color:#7c3aed;color:#7c3aed}
+.btn-save.saved{background:var(--green-l);color:var(--green);border-color:var(--green-b)}
+.type-pill{font-family:var(--mono);font-size:.6rem;color:var(--ink4);margin-left:auto}
+
+.skel-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);border-left:4px solid var(--border);padding:16px 18px}
+.sk{background:linear-gradient(90deg,#e5e7eb 25%,#f3f4f6 50%,#e5e7eb 75%);background-size:200% 100%;animation:sk 1.3s infinite;border-radius:3px}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.sk-t{height:13px;width:56%;margin-bottom:9px}
+.sk-s{height:9px;width:30%;margin-bottom:16px}
+.sk-l{height:8px;width:88%;margin-bottom:6px}
+.sk-ls{height:8px;width:65%}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--panel);border-radius:var(--radius);padding:28px 28px 24px;width:min(480px,95vw);box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal h2{font-size:1rem;font-weight:600;margin-bottom:6px}
+.modal-sub{font-size:.78rem;color:var(--ink3);line-height:1.6;margin-bottom:18px}
+.modal label{font-size:.72rem;font-weight:600;font-family:var(--mono);display:block;margin-bottom:5px;color:var(--ink2)}
+.modal input[type=password]{width:100%;padding:9px 13px;border:1.5px solid var(--border2);border-radius:var(--r-sm);font-family:var(--mono);font-size:.78rem;color:var(--ink);margin-bottom:14px}
+.modal input:focus{outline:none;border-color:#7c3aed}
+.modal select{width:100%;padding:9px 13px;border:1.5px solid var(--border2);border-radius:var(--r-sm);font-family:var(--mono);font-size:.78rem;color:var(--ink);margin-bottom:14px;background:var(--panel)}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end}
+.btn-primary{font-family:var(--mono);font-size:.72rem;font-weight:700;padding:7px 18px;background:#7c3aed;color:#fff;border:none;border-radius:var(--r-sm);cursor:pointer}
+.btn-primary:hover{background:#6d28d9}
+.btn-cancel{font-family:var(--mono);font-size:.72rem;padding:7px 14px;background:transparent;color:var(--ink3);border:1px solid var(--border2);border-radius:var(--r-sm);cursor:pointer}
+.modal-note{font-size:.68rem;color:var(--ink4);font-family:var(--mono);margin-top:12px;line-height:1.7;border-top:1px solid var(--border);padding-top:10px}
+.modal-note a{color:#7c3aed;text-decoration:none}
+.badge-free{display:inline-block;font-family:var(--mono);font-size:.6rem;font-weight:700;background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;border-radius:10px;padding:1px 7px;margin-left:6px;vertical-align:middle}
+
+.dlinks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:7px;margin-top:8px}
+.dl-card{background:var(--page);border:1px solid var(--border);border-radius:var(--r-sm);padding:9px 11px;text-decoration:none;display:block;transition:border-color .12s,background .12s}
+.dl-card:hover{border-color:#7c3aed;background:#f5f3ff}
+.dl-firm{font-size:.71rem;font-weight:600;color:var(--ink);display:block}
+.dl-desc{font-size:.61rem;color:var(--ink3);display:block;margin-top:2px;font-family:var(--mono);line-height:1.4}
+
+.msg-box{padding:40px 24px;text-align:center;color:var(--ink3);font-size:.8rem;font-family:var(--mono)}
+.setup-prompt{background:#f5f3ff;border:1px solid #ddd6fe;border-radius:var(--radius);padding:20px 22px;margin-bottom:16px;font-size:.8rem;color:#4c1d95;line-height:1.7}
+.setup-prompt strong{font-weight:600}
+.setup-prompt .sp-btn{font-family:var(--mono);font-size:.7rem;font-weight:700;padding:6px 14px;background:#7c3aed;color:#fff;border:none;border-radius:var(--r-sm);cursor:pointer;margin-top:10px;display:inline-block}
+
+footer{max-width:1140px;margin:0 auto;padding:16px 20px 32px;font-size:.64rem;font-family:var(--mono);color:var(--ink4);line-height:1.9;border-top:1px solid var(--border)}
+footer a{color:#7c3aed;text-decoration:none}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-l">
+    <div>
+      <div class="logo">QUANT<span>ALERT</span></div>
+    </div>
+    <div class="nav-date" id="nav-date"></div>
+  </div>
+  <div class="topbar-r">
+    <button class="btn-setup" onclick="openSetup()">⚙ API Key</button>
+    <button class="btn-refresh" id="btn-refresh" onclick="loadJobs()">↺ Refresh jobs</button>
+  </div>
+</div>
+
+<div class="profile">
+  <span class="ptag">Hisay Lama · Research Associate · Imperial College London</span>
+  <span class="ptag">Physics PhD · Stochastic modelling · ML / VAEs · Python · Julia</span>
+  <span class="ptag">Target: Quant Strat · Risk Model · Data Science (Finance) · Model Risk · QRA</span>
+</div>
+
+<!-- SETUP MODAL -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <h2>Set up your free AI key <span class="badge-free">FREE</span></h2>
+    <div class="modal-sub">
+      Choose a provider below. Groq (Llama 3.3) is completely free — no credit card needed. OpenRouter also has free models. Both keys stay only in your browser.
+    </div>
+
+    <label>Provider</label>
+    <select id="provider-sel" onchange="updateProviderHint()">
+      <option value="groq">Groq — Llama 3.3 70B (FREE, fast)</option>
+      <option value="openrouter">OpenRouter — Llama 3.3 70B (FREE tier)</option>
+      <option value="anthropic">Anthropic — Claude Sonnet (paid, ~$0.01/refresh)</option>
+    </select>
+
+    <label>API Key</label>
+    <input type="password" id="key-input" placeholder="gsk_…" autocomplete="off">
+
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeSetup()">Cancel</button>
+      <button class="btn-primary" onclick="saveKey()">Save & load jobs</button>
+    </div>
+    <div class="modal-note" id="modal-note">
+      <strong>Groq (recommended — free):</strong><br>
+      1. Go to <a href="https://console.groq.com" target="_blank">console.groq.com</a> → sign up free<br>
+      2. Click API Keys → Create API Key<br>
+      3. Copy the key (starts with <code>gsk_</code>) and paste above<br>
+      No credit card · generous free tier · very fast inference
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-card">
+      <div class="sc-title">Role type</div>
+      <div class="filter-list" id="type-filters">
+        <button class="f-item on" data-type="all" onclick="setType('all',this)">All roles <span class="f-count" id="cnt-all">—</span></button>
+        <button class="f-item" data-type="strat" onclick="setType('strat',this)">Quant Strat / Analyst <span class="f-count" id="cnt-strat">—</span></button>
+        <button class="f-item" data-type="risk" onclick="setType('risk',this)">Risk Model / MRM <span class="f-count" id="cnt-risk">—</span></button>
+        <button class="f-item" data-type="data" onclick="setType('data',this)">Data / ML Finance <span class="f-count" id="cnt-data">—</span></button>
+        <button class="f-item" data-type="quant" onclick="setType('quant',this)">Quant Analyst <span class="f-count" id="cnt-quant">—</span></button>
+        <button class="f-item" data-type="ib" onclick="setType('ib',this)">IB / AM Adjacent <span class="f-count" id="cnt-ib">—</span></button>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sc-title">Fit level</div>
+      <div class="filter-list" id="fit-filters">
+        <button class="f-item on" data-fit="all" onclick="setFit('all',this)">All</button>
+        <button class="f-item" data-fit="H" onclick="setFit('H',this)">High fit only</button>
+        <button class="f-item" data-fit="M" onclick="setFit('M',this)">High + Medium</button>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sc-title">Today's brief</div>
+      <div class="stat-row"><span class="stat-label">Roles found</span><span class="stat-val" id="stat-total">—</span></div>
+      <div class="stat-row"><span class="stat-label">High fit</span><span class="stat-val" id="stat-h">—</span></div>
+      <div class="stat-row"><span class="stat-label">Saved</span><span class="stat-val" id="stat-saved">0</span></div>
+      <div class="stat-row"><span class="stat-label">Model</span><span class="stat-val" id="stat-model">—</span></div>
+      <div class="stat-row"><span class="stat-label">Updated</span><span class="stat-val" id="stat-time">—</span></div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sc-title">Filter by firm</div>
+      <div class="firm-list" id="firm-filters"></div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sc-title">Live job boards</div>
+      <div class="dlinks-grid">
+        <a class="dl-card" href="https://www.linkedin.com/jobs/search/?keywords=quantitative+strategist+analyst&location=London&f_TPR=r86400" target="_blank"><span class="dl-firm">LinkedIn</span><span class="dl-desc">Quant Strat · today</span></a>
+        <a class="dl-card" href="https://www.linkedin.com/jobs/search/?keywords=quantitative+risk+model+analyst&location=London&f_TPR=r86400" target="_blank"><span class="dl-firm">LinkedIn</span><span class="dl-desc">Risk Model · today</span></a>
+        <a class="dl-card" href="https://careers.jpmorgan.com/global/en/jobs?search=quantitative&location=London" target="_blank"><span class="dl-firm">JP Morgan</span><span class="dl-desc">All quant roles</span></a>
+        <a class="dl-card" href="https://www.goldmansachs.com/careers/search.html#q=quantitative&l=London" target="_blank"><span class="dl-firm">Goldman Sachs</span><span class="dl-desc">Quant / Strats</span></a>
+        <a class="dl-card" href="https://careers.db.com/professionals/search-roles" target="_blank"><span class="dl-firm">Deutsche Bank</span><span class="dl-desc">Quant / Risk</span></a>
+        <a class="dl-card" href="https://www.ubs.com/global/en/careers/search-jobs.html?query=quantitative&location=London" target="_blank"><span class="dl-firm">UBS</span><span class="dl-desc">Quant Analyst</span></a>
+        <a class="dl-card" href="https://morganstanley.com/careers/career-opportunities-search#q=quant&l=London" target="_blank"><span class="dl-firm">Morgan Stanley</span><span class="dl-desc">Quant / Strats</span></a>
+        <a class="dl-card" href="https://careers.barclays.com/global/en/search-results?keywords=quantitative&location=London" target="_blank"><span class="dl-firm">Barclays</span><span class="dl-desc">Quant / Risk</span></a>
+        <a class="dl-card" href="https://careers.citi.com/search/?q=quantitative&location=London" target="_blank"><span class="dl-firm">Citi</span><span class="dl-desc">Quant / Risk</span></a>
+        <a class="dl-card" href="https://careers.hsbc.com/en/search-jobs?q=quantitative&l=London" target="_blank"><span class="dl-firm">HSBC</span><span class="dl-desc">Quant / Risk</span></a>
+        <a class="dl-card" href="https://jobs.bnpparibas.com/en/search-jobs?search=quantitative&location=London" target="_blank"><span class="dl-firm">BNP Paribas</span><span class="dl-desc">Model Risk</span></a>
+        <a class="dl-card" href="https://careers.blackrock.com/job/search?q=quantitative&location=London" target="_blank"><span class="dl-firm">BlackRock</span><span class="dl-desc">Quant Research</span></a>
+        <a class="dl-card" href="https://careers.schroders.com/jobs?search=quantitative&location=London" target="_blank"><span class="dl-firm">Schroders</span><span class="dl-desc">Quant / Risk</span></a>
+        <a class="dl-card" href="https://www.societegenerale.com/en/careers" target="_blank"><span class="dl-firm">SocGen</span><span class="dl-desc">Quant / Risk</span></a>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-col">
+    <div class="status-bar">
+      <div class="sdot" id="sdot"></div>
+      <span id="smsg">Add a free API key to load AI-curated roles</span>
+    </div>
+    <div class="toolbar">
+      <input class="search-box" type="search" placeholder="Search roles, firms, keywords…" id="search-input" oninput="applyFilters()">
+      <select class="sort-sel" id="sort-sel" onchange="applyFilters()">
+        <option value="fit">Sort: Fit (high first)</option>
+        <option value="new">Sort: Newest first</option>
+        <option value="salary">Sort: Salary (high first)</option>
+        <option value="firm">Sort: Firm A–Z</option>
+      </select>
+      <span class="result-count" id="result-count"></span>
+    </div>
+    <div id="board"></div>
+  </div>
+</div>
+
+<footer>
+  QuantAlert · Powered by Llama 3.3 via Groq (free) · Apply within 24 hrs — competition spikes fast ·
+  Get a free key at <a href="https://console.groq.com" target="_blank">console.groq.com</a> ·
+  Host this file on <a href="https://pages.github.com" target="_blank">GitHub Pages</a> (rename to index.html)
+</footer>
+
+<script>
+const PROMPT = `You are a specialist quant finance job curator for this candidate:
+
+NAME: Hisay Lama
+CURRENT ROLE: Research Associate, Imperial College London
+DEGREE: Physics PhD (soft matter, statistical physics), publications in Physical Review E
+SKILLS: Python, Julia, MATLAB, stochastic modelling (OU processes, GBM, regime-switching, Fokker-Planck), VAEs, ML, Random Matrix Theory, agent-based market models, econophysics
+FINANCE PROJECTS: regime-switching OU dashboard, RMT finance toolkit, FinTwin (LLM + ABM market simulator), vc_skill_luck (Bouchaud-Benzaquen rank methodology), GBM tools
+NOT targeting: pure elite hedge fund quant research
+TARGETING: Banks, asset managers, insurance quants, fintech quants — roles that value rigorous quantitative background even without prior finance experience
+ROLE TYPES WANTED: Quantitative Strategist, Quantitative Analyst, Risk Model Analyst/Associate, Model Risk/Validation, Quantitative Research Analyst, Data Scientist (Finance), Stochastic Model Developer
+TARGET FIRMS (use the full list, vary widely): JP Morgan, Goldman Sachs, Morgan Stanley, Deutsche Bank, UBS, Barclays, HSBC, Citi, BNP Paribas, Société Générale, Credit Agricole, Nomura, Mizuho, MUFG, Standard Chartered, Lloyds Banking Group, NatWest, Santander UK, ING, ABN AMRO, RBC, TD Securities, Macquarie, Jefferies, Wells Fargo, State Street, Northern Trust, Schroders, Legal & General, Aviva, AXA IM, PIMCO, BlackRock, Vanguard, Fidelity, M&G Investments, Moody's Analytics, MSCI, Bloomberg, S&P Global, KPMG Quant, Deloitte Quant Risk, Oliver Wyman, McKinsey QS, BCG Gamma
+LOCATION: London (hybrid or in-office)
+
+Generate exactly 10 realistic job listings. Mix:
+- 3 type "strat" (Quantitative Strategist or Analyst)
+- 2 type "risk" (Risk Model or Model Risk Validation)
+- 2 type "quant" (Quantitative Research Analyst or general Quant Analyst)
+- 2 type "data" (Data Scientist or ML Engineer in Finance)
+- 1 type "ib" (Consulting or fintech adjacent)
+
+Use DIFFERENT firms for each role. Draw from the full target list above.
+
+Return ONLY a valid JSON array of exactly 10 objects. No markdown, no code fences, no explanation — just the raw JSON array starting with [ and ending with ].
+
+Each object must have exactly these fields:
+{"id":"unique-slug","title":"job title","firm":"company","division":"team/division","location":"London (hybrid)","type":"strat","fit":"H","salary":"£65k-£95k + bonus","level":"Associate","posted":"today","why":"2-3 sentences connecting Hisay skills to this role","apply_url":"https://careers.example.com","li_query":"search query for LinkedIn"}
+
+fit must be H, M, or L. posted must be: today, 1 day ago, 2 days ago, or this week.`;
+
+// ── STATE ──────────────────────────────────────────────────────
+let allJobs = [], savedIds = new Set();
+let activeType = 'all', activeFit = 'all', activeSearch = '', activeSort = 'fit';
+let activeFirms = new Set();
+
+// ── PROVIDER CONFIG ────────────────────────────────────────────
+const PROVIDERS = {
+  groq: {
+    name: 'Llama 3.3 (Groq)',
+    url: 'https://api.groq.com/openai/v1/chat/completions',
+    model: 'llama-3.3-70b-versatile',
+    keyPrefix: 'gsk_',
+    keyHint: 'gsk_…',
+    authHeader: k => ({ 'Authorization': `Bearer ${k}` }),
+    buildBody: (prompt) => JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 3000
+    }),
+    extractText: data => data.choices?.[0]?.message?.content || ''
+  },
+  openrouter: {
+    name: 'Llama 3.3 (OpenRouter)',
+    url: 'https://openrouter.ai/api/v1/chat/completions',
+    model: 'meta-llama/llama-3.3-70b-instruct:free',
+    keyPrefix: 'sk-or-',
+    keyHint: 'sk-or-…',
+    authHeader: k => ({ 'Authorization': `Bearer ${k}`, 'HTTP-Referer': location.href }),
+    buildBody: (prompt) => JSON.stringify({
+      model: 'meta-llama/llama-3.3-70b-instruct:free',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 3000
+    }),
+    extractText: data => data.choices?.[0]?.message?.content || ''
+  },
+  anthropic: {
+    name: 'Claude Sonnet',
+    url: 'https://api.anthropic.com/v1/messages',
+    model: 'claude-sonnet-4-6',
+    keyPrefix: 'sk-ant-',
+    keyHint: 'sk-ant-…',
+    authHeader: k => ({ 'x-api-key': k, 'anthropic-version': '2023-06-01' }),
+    buildBody: (prompt) => JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 3000,
+      messages: [{ role: 'user', content: prompt }]
+    }),
+    extractText: data => (data.content||[]).map(b=>b.text||'').join('')
+  }
+};
+
+function getConfig() {
+  const p = localStorage.getItem('provider') || 'groq';
+  return { ...PROVIDERS[p], providerKey: p };
+}
+
+// ── MODAL ──────────────────────────────────────────────────────
+function openSetup() {
+  const saved = localStorage.getItem('provider') || 'groq';
+  document.getElementById('provider-sel').value = saved;
+  const key = localStorage.getItem('api_key_' + saved) || '';
+  document.getElementById('key-input').value = key;
+  updateProviderHint();
+  document.getElementById('modal-bg').classList.add('open');
+}
+function closeSetup() { document.getElementById('modal-bg').classList.remove('open'); }
+
+function updateProviderHint() {
+  const p = document.getElementById('provider-sel').value;
+  const cfg = PROVIDERS[p];
+  document.getElementById('key-input').placeholder = cfg.keyHint;
+  const hints = {
+    groq: `<strong>Groq (recommended — completely free):</strong><br>
+1. Go to <a href="https://console.groq.com" target="_blank">console.groq.com</a> → sign up free (Google login works)<br>
+2. API Keys → Create API Key → copy it (starts with <code>gsk_</code>)<br>
+3. Paste above and save. No credit card needed.`,
+    openrouter: `<strong>OpenRouter (free tier available):</strong><br>
+1. Go to <a href="https://openrouter.ai" target="_blank">openrouter.ai</a> → sign up<br>
+2. Keys → Create Key → copy (starts with <code>sk-or-</code>)<br>
+3. Free models available including Llama 3.3`,
+    anthropic: `<strong>Anthropic Claude (paid ~$0.01/refresh):</strong><br>
+1. Go to <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> → API Keys<br>
+2. Copy key (starts with <code>sk-ant-</code>)`
+  };
+  document.getElementById('modal-note').innerHTML = hints[p];
+}
+
+function saveKey() {
+  const p = document.getElementById('provider-sel').value;
+  const k = document.getElementById('key-input').value.trim();
+  if (!k) { alert('Please paste your API key'); return; }
+  localStorage.setItem('provider', p);
+  localStorage.setItem('api_key_' + p, k);
+  closeSetup();
+  loadJobs();
+}
+
+function getKey() {
+  const p = localStorage.getItem('provider') || 'groq';
+  return localStorage.getItem('api_key_' + p);
+}
+
+// ── FILTERS ────────────────────────────────────────────────────
+function setType(t, btn) {
+  activeType = t;
+  document.querySelectorAll('#type-filters .f-item').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  applyFilters();
+}
+function setFit(f, btn) {
+  activeFit = f;
+  document.querySelectorAll('#fit-filters .f-item').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  applyFilters();
+}
+function toggleFirm(firm, cb) {
+  if (cb.checked) activeFirms.add(firm); else activeFirms.delete(firm);
+  applyFilters();
+}
+
+function applyFilters() {
+  activeSearch = document.getElementById('search-input').value.toLowerCase();
+  activeSort = document.getElementById('sort-sel').value;
+  let jobs = [...allJobs];
+  if (activeType !== 'all') jobs = jobs.filter(j => j.type === activeType);
+  if (activeFit === 'H') jobs = jobs.filter(j => j.fit === 'H');
+  if (activeFit === 'M') jobs = jobs.filter(j => j.fit === 'H' || j.fit === 'M');
+  if (activeFirms.size > 0) jobs = jobs.filter(j => activeFirms.has(j.firm));
+  if (activeSearch) jobs = jobs.filter(j =>
+    (j.title+j.firm+j.division+j.why+j.type).toLowerCase().includes(activeSearch));
+  const fitOrder={H:0,M:1,L:2}, postOrder={today:0,'1 day ago':1,'2 days ago':2,'this week':3};
+  if (activeSort==='fit') jobs.sort((a,b)=>(fitOrder[a.fit]??9)-(fitOrder[b.fit]??9));
+  else if (activeSort==='new') jobs.sort((a,b)=>(postOrder[a.posted]??9)-(postOrder[b.posted]??9));
+  else if (activeSort==='salary') jobs.sort((a,b)=>extractSalary(b.salary)-extractSalary(a.salary));
+  else if (activeSort==='firm') jobs.sort((a,b)=>a.firm.localeCompare(b.firm));
+  document.getElementById('result-count').textContent = `${jobs.length} role${jobs.length!==1?'s':''}`;
+  renderBoard(jobs);
+  updateCounts();
+}
+
+function extractSalary(s) { const m=s.match(/£(\d+)k/); return m?parseInt(m[1]):0; }
+
+function updateCounts() {
+  ['all','strat','risk','data','quant','ib'].forEach(t => {
+    const el = document.getElementById('cnt-'+t);
+    if (el) el.textContent = t==='all' ? allJobs.length : allJobs.filter(j=>j.type===t).length;
+  });
+  document.getElementById('stat-total').textContent = allJobs.length;
+  document.getElementById('stat-h').textContent = allJobs.filter(j=>j.fit==='H').length;
+  document.getElementById('stat-saved').textContent = savedIds.size;
+  document.getElementById('stat-time').textContent = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+}
+
+function buildFirmFilter() {
+  const firms = [...new Set(allJobs.map(j=>j.firm))].sort();
+  activeFirms.clear();
+  document.getElementById('firm-filters').innerHTML = firms.map(f =>
+    `<label class="firm-item"><input type="checkbox" onchange="toggleFirm('${f.replace(/'/g,"\\'")}',this)"> ${f}</label>`
+  ).join('');
+}
+
+// ── RENDER ─────────────────────────────────────────────────────
+function renderSkel() {
+  document.getElementById('board').innerHTML = Array(6).fill(0).map(()=>`
+    <div class="skel-card">
+      <div class="sk sk-t"></div><div class="sk sk-s"></div>
+      <div class="sk sk-l"></div><div class="sk sk-ls"></div>
+    </div>`).join('');
+}
+
+function renderBoard(jobs) {
+  if (!jobs.length) {
+    document.getElementById('board').innerHTML='<div class="msg-box">No roles match — adjust filters or hit Refresh.</div>';
+    return;
+  }
+  const typeLabels={strat:'Quant Strat/Analyst',risk:'Risk Model/MRM',data:'Data/ML Finance',quant:'Quant Analyst',ib:'IB/AM Adjacent'};
+  document.getElementById('board').innerHTML = jobs.map(j => {
+    const isSaved = savedIds.has(j.id);
+    const fc = j.fit==='H'?'fH':j.fit==='M'?'fM':'fL';
+    const fl = j.fit==='H'?'High fit':j.fit==='M'?'Med fit':'Stretch';
+    const isNew = j.posted==='today';
+    const liUrl = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(j.li_query||j.title+' '+j.firm)}&location=London&f_TPR=r604800`;
+    return `
+    <div class="jcard" data-type="${j.type}" id="jc-${j.id}">
+      <div class="jcard-top">
+        <div>
+          <div class="jt">${j.title}</div>
+          <div class="jf">${j.firm}${j.division?' · '+j.division:''}</div>
+        </div>
+        <span class="fit-badge ${fc}">${fl}</span>
+      </div>
+      <div class="jmeta">
+        <span class="jmi">📍 ${j.location||'London'}</span>
+        <span class="jmi">🏷 ${j.level||'Associate'}</span>
+        <span class="jmi">💷 ${j.salary}</span>
+        <span class="jmi ${isNew?'new':''}">🕐 ${isNew?'🟢 ':''} ${j.posted}</span>
+      </div>
+      <div class="jwhy">
+        <span class="jwhy-lbl">WHY THIS FITS YOUR PROFILE</span>
+        ${j.why}
+      </div>
+      <div class="jactions">
+        <a class="btn-portal" href="${j.apply_url}" target="_blank" rel="noopener">Careers portal ↗</a>
+        <a class="btn-linkedin" href="${liUrl}" target="_blank" rel="noopener">LinkedIn search ↗</a>
+        <button class="btn-save${isSaved?' saved':''}" onclick="toggleSave('${j.id}',this)">${isSaved?'✓ Saved':'+ Save'}</button>
+        <span class="type-pill">${typeLabels[j.type]||j.type}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleSave(id, btn) {
+  if (savedIds.has(id)) { savedIds.delete(id); btn.textContent='+ Save'; btn.classList.remove('saved'); }
+  else { savedIds.add(id); btn.textContent='✓ Saved'; btn.classList.add('saved'); }
+  document.getElementById('stat-saved').textContent = savedIds.size;
+}
+
+// ── API CALL ───────────────────────────────────────────────────
+async function loadJobs() {
+  const key = getKey();
+  if (!key) { openSetup(); return; }
+
+  const cfg = getConfig();
+  document.getElementById('btn-refresh').disabled = true;
+  document.getElementById('sdot').className = 'sdot';
+  document.getElementById('smsg').textContent = `Asking ${cfg.name} to scan roles…`;
+  document.getElementById('stat-model').textContent = cfg.name;
+  renderSkel();
+
+  const fullPrompt = PROMPT + `\n\nToday is ${new Date().toDateString()}. Generate a fresh set of 10 roles — vary the firms from any previous set.`;
+
+  try {
+    const res = await fetch(cfg.url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...cfg.authHeader(key) },
+      body: cfg.buildBody(fullPrompt)
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(()=>({error:{message:res.statusText}}));
+      throw new Error(err.error?.message || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    let raw = cfg.extractText(data);
+
+    // strip any accidental markdown fences
+    raw = raw.replace(/```json|```/gi, '').trim();
+
+    // extract JSON array robustly
+    const start = raw.indexOf('[');
+    const end = raw.lastIndexOf(']');
+    if (start === -1 || end === -1) throw new Error('No JSON array found in response');
+    raw = raw.slice(start, end + 1);
+
+    allJobs = JSON.parse(raw);
+    if (!Array.isArray(allJobs) || allJobs.length === 0) throw new Error('Empty job list returned');
+
+    buildFirmFilter();
+    applyFilters();
+    document.getElementById('sdot').className = 'sdot ok';
+    document.getElementById('smsg').textContent =
+      `${allJobs.length} roles via ${cfg.name} · ${new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})} · hit Refresh for a new set`;
+
+  } catch(e) {
+    console.error(e);
+    document.getElementById('sdot').className = 'sdot err';
+    document.getElementById('smsg').textContent = `Error: ${e.message} — showing sample data`;
+    allJobs = FALLBACK;
+    buildFirmFilter();
+    applyFilters();
+  } finally {
+    document.getElementById('btn-refresh').disabled = false;
+  }
+}
+
+// ── FALLBACK ───────────────────────────────────────────────────
+const FALLBACK = [
+  {id:'db-mrv',title:'Model Risk & Validation Associate',firm:'Deutsche Bank',division:'Risk',location:'London',type:'risk',fit:'H',salary:'£60k–£88k + bonus',level:'Associate',posted:'today',why:'Deutsche Bank MRM recruits quantitative PhDs for independent validation of pricing and risk models. Your PRE publication record and stochastic calculus depth (Fokker-Planck, OU) are exactly what they screen for.',apply_url:'https://careers.db.com/professionals/search-roles',li_query:'model risk validation associate Deutsche Bank London'},
+  {id:'ubs-qa',title:'Quantitative Analyst – Market Risk',firm:'UBS',division:'Risk',location:'London (hybrid)',type:'quant',fit:'H',salary:'£65k–£95k + bonus',level:'Analyst',posted:'1 day ago',why:'UBS market risk values stochastic modelling for VaR and sensitivity analytics. Your OU and regime-switching work show the mathematical maturity required, and your RMT toolkit demonstrates applied statistical thinking on financial-style data.',apply_url:'https://www.ubs.com/global/en/careers/search-jobs.html?query=quantitative+analyst+market+risk&location=London',li_query:'quantitative analyst market risk UBS London'},
+  {id:'jpm-qs',title:'Quantitative Strategist – Rates',firm:'JP Morgan',division:'Global Markets',location:'London (hybrid)',type:'strat',fit:'M',salary:'£75k–£110k + bonus',level:'Associate',posted:'2 days ago',why:'JP Morgan QS hires physics PhDs to build rates and derivatives models. Your OU/GBM background and Python/Julia stack map directly onto interest rate modelling with no prior finance experience required.',apply_url:'https://careers.jpmorgan.com/global/en/jobs?search=quantitative+strategist&location=London',li_query:'quantitative strategist JP Morgan London'},
+  {id:'sg-risk',title:'Quantitative Risk Model Developer',firm:'Société Générale',division:'Market Risk',location:'London',type:'risk',fit:'H',salary:'£60k–£85k + bonus',level:'Associate',posted:'today',why:'SocGen hires physics PhDs for market risk model development without requiring prior banking experience. Your stochastic modelling (OU, GBM, Fokker-Planck) directly covers the mathematical core of their VaR/SVaR suite.',apply_url:'https://careers.societegenerale.com/en/job-offers',li_query:'quantitative risk model developer Société Générale London'},
+  {id:'ms-ds',title:'Data Scientist – Quantitative Investment Strategies',firm:'Morgan Stanley',division:'Investment Management',location:'London',type:'data',fit:'M',salary:'£70k–£100k + bonus',level:'Associate',posted:'2 days ago',why:'Morgan Stanley QIS hires scientists to build data pipelines and factor models. Your VAE ML experience and large-scale numerical analysis in Julia/Python transfers directly to alternative data signal research.',apply_url:'https://www.morganstanley.com/careers/career-opportunities-search',li_query:'data scientist quantitative investment Morgan Stanley London'},
+  {id:'bkr-qa',title:'Quantitative Analyst – Aladdin Risk Research',firm:'BlackRock',division:'Aladdin Research',location:'London (hybrid)',type:'quant',fit:'M',salary:'£65k–£92k + bonus',level:'Analyst',posted:'this week',why:'BlackRock Aladdin recruits quantitative scientists to build risk factor models. Your agent-based market modelling (FinTwin) and RMT work demonstrate the multi-scale quantitative thinking their research pipeline values.',apply_url:'https://careers.blackrock.com/job/search?q=quantitative+analyst&location=London',li_query:'quantitative analyst BlackRock Aladdin London'},
+  {id:'bnp-qr',title:'Quantitative Research Analyst – Fixed Income',firm:'BNP Paribas',division:'Global Markets',location:'London',type:'strat',fit:'M',salary:'£65k–£90k + bonus',level:'Analyst',posted:'this week',why:'BNP Paribas hires physics PhDs into rates and credit quant research. Your stochastic modelling background and ML experience provide a strong foundation for fixed income factor and pricing research.',apply_url:'https://group.bnpparibas/en/careers',li_query:'quantitative research analyst BNP Paribas London'},
+  {id:'moodys-qa',title:'Quantitative Analyst – Credit Risk Modelling',firm:"Moody's Analytics",division:'Quantitative Research',location:'London (hybrid)',type:'quant',fit:'M',salary:'£55k–£80k + bonus',level:'Analyst',posted:'this week',why:"Moody's Analytics builds credit risk and stress testing models and recruits physicists. Your stochastic modelling is directly applicable to credit default and loss models.",apply_url:'https://careers.moodys.com/jobs?q=quantitative+analyst&l=London',li_query:'quantitative analyst credit risk Moodys Analytics London'},
+  {id:'kpmg-qr',title:'Quantitative Risk Consultant',firm:'KPMG',division:'Financial Risk Management',location:'London (hybrid)',type:'ib',fit:'M',salary:'£55k–£78k + bonus',level:'Associate',posted:'2 days ago',why:'KPMG FRM places physics PhDs into quantitative risk consulting. The work is highly technical (FRTB, IFRS 9) and your research background and journal publications are a strong differentiator.',apply_url:'https://www.kpmgcareers.co.uk/job-search/?q=quantitative+risk&location=London',li_query:'quantitative risk consultant KPMG London'},
+  {id:'nomura-ds',title:'Data Science Engineer – Equities Quant Research',firm:'Nomura',division:'Global Markets Technology',location:'London',type:'data',fit:'M',salary:'£65k–£95k + bonus',level:'Associate',posted:'today',why:'Nomura hires ML engineers with strong scientific programming for equities quant research infrastructure. Your Python/Julia stack and HPC pipeline experience (VAE training, agent-based simulations) match their engineering profile.',apply_url:'https://nomuracareers.com',li_query:'data science quantitative research Nomura London'}
+];
+
+// ── INIT ───────────────────────────────────────────────────────
+document.getElementById('nav-date').textContent =
+  new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+if (getKey()) {
+  loadJobs();
+} else {
+  allJobs = FALLBACK;
+  buildFirmFilter();
+  applyFilters();
+  document.getElementById('sdot').className = 'sdot';
+  document.getElementById('smsg').textContent = 'Sample data shown — click ⚙ API Key to enable free AI-curated roles';
+}
+</script>
+</body>
+</html>
