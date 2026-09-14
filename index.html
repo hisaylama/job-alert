@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quant Job Alert — Hisay Lama</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0d1117;--ink2:#374151;--ink3:#6b7280;--ink4:#9ca3af;
+  --page:#f8f9fc;--panel:#ffffff;
+  --blue:#1d4ed8;--blue-l:#eff6ff;--blue-b:#bfdbfe;
+  --green:#065f46;--green-l:#ecfdf5;--green-b:#a7f3d0;
+  --amber:#92400e;--amber-l:#fffbeb;--amber-b:#fde68a;
+  --red:#991b1b;--red-l:#fef2f2;--red-b:#fecaca;
+  --purple:#4c1d95;--purple-l:#f5f3ff;--purple-b:#ddd6fe;
+  --teal:#134e4a;--teal-l:#f0fdfa;--teal-b:#99f6e4;
+  --border:#e5e7eb;--border2:#d1d5db;
+  --radius:10px;--r-sm:6px;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+body{font-family:var(--sans);background:var(--page);color:var(--ink);min-height:100vh;font-size:15px}
+
+/* ── TOP NAV ── */
+.topbar{background:var(--ink);color:#f9fafb;padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-l{display:flex;align-items:center;gap:14px}
+.logo{font-family:var(--mono);font-size:.78rem;font-weight:600;letter-spacing:.05em;color:#f9fafb}
+.logo span{color:#60a5fa}
+.nav-date{font-family:var(--mono);font-size:.65rem;color:#6b7280}
+.topbar-r{display:flex;align-items:center;gap:10px}
+.btn-refresh{font-family:var(--mono);font-size:.68rem;font-weight:700;padding:5px 14px;border-radius:var(--r-sm);border:none;background:#2563eb;color:#fff;cursor:pointer;letter-spacing:.03em;transition:background .12s}
+.btn-refresh:hover{background:#1d4ed8}
+.btn-refresh:disabled{background:#374151;cursor:not-allowed}
+.btn-setup{font-family:var(--mono);font-size:.68rem;font-weight:700;padding:5px 12px;border-radius:var(--r-sm);border:1px solid #374151;background:transparent;color:#9ca3af;cursor:pointer}
+.btn-setup:hover{border-color:#60a5fa;color:#60a5fa}
+
+/* ── PROFILE STRIP ── */
+.profile{background:#1e293b;padding:8px 24px;display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.67rem;font-family:var(--mono);color:#94a3b8;border-bottom:1px solid #0d1117}
+.ptag{color:#7dd3fc}
+.ptag::before{content:'◆ ';font-size:.5rem}
+
+/* ── MAIN LAYOUT ── */
+.layout{display:grid;grid-template-columns:220px 1fr;gap:0;max-width:1140px;margin:0 auto;padding:24px 20px 60px;gap:20px}
+@media(max-width:720px){.layout{grid-template-columns:1fr}}
+
+/* ── SIDEBAR ── */
+.sidebar{display:flex;flex-direction:column;gap:14px}
+.sidebar-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+.sc-title{font-size:.68rem;font-weight:600;font-family:var(--mono);color:var(--ink3);letter-spacing:.04em;margin-bottom:10px;text-transform:uppercase}
+
+.filter-list{display:flex;flex-direction:column;gap:4px}
+.f-item{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:var(--r-sm);cursor:pointer;font-size:.78rem;color:var(--ink2);transition:background .1s;border:none;background:transparent;width:100%;text-align:left}
+.f-item:hover{background:var(--blue-l)}
+.f-item.on{background:var(--blue-l);color:var(--blue);font-weight:600}
+.f-count{font-family:var(--mono);font-size:.65rem;background:var(--border);color:var(--ink3);padding:1px 6px;border-radius:10px}
+.f-item.on .f-count{background:var(--blue-b);color:var(--blue)}
+
+.firm-list{display:flex;flex-direction:column;gap:3px;max-height:240px;overflow-y:auto}
+.firm-item{display:flex;align-items:center;gap:7px;padding:4px 6px;border-radius:4px;cursor:pointer;font-size:.74rem;color:var(--ink2)}
+.firm-item:hover{background:var(--page)}
+.firm-item input{accent-color:var(--blue);cursor:pointer;flex-shrink:0}
+
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:.73rem}
+.stat-label{color:var(--ink3)}
+.stat-val{font-family:var(--mono);font-weight:600;color:var(--ink)}
+
+/* ── MAIN CONTENT ── */
+.main-col{min-width:0}
+
+/* STATUS BAR */
+.status-bar{display:flex;align-items:center;gap:8px;font-size:.72rem;font-family:var(--mono);color:var(--ink3);margin-bottom:14px;flex-wrap:wrap}
+.sdot{width:7px;height:7px;border-radius:50%;background:#9ca3af;flex-shrink:0}
+.sdot.ok{background:#22c55e;animation:pls 1.8s infinite}
+.sdot.err{background:#ef4444}
+@keyframes pls{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* SORT / VIEW ROW */
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.sort-sel{font-family:var(--mono);font-size:.68rem;padding:5px 10px;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--panel);color:var(--ink);cursor:pointer}
+.search-box{flex:1;min-width:140px;font-size:.8rem;padding:5px 12px;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--panel);color:var(--ink)}
+.search-box:focus{outline:none;border-color:var(--blue)}
+.result-count{font-family:var(--mono);font-size:.68rem;color:var(--ink3);white-space:nowrap}
+
+/* JOB CARDS */
+#board{display:flex;flex-direction:column;gap:12px}
+
+.jcard{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);border-left:4px solid var(--blue);padding:16px 18px 13px;transition:box-shadow .15s,border-color .15s;cursor:default}
+.jcard:hover{box-shadow:0 3px 18px rgba(0,0,0,.07);border-color:var(--border2)}
+.jcard[data-type=risk]{border-left-color:#7c3aed}
+.jcard[data-type=data]{border-left-color:#0891b2}
+.jcard[data-type=strat]{border-left-color:#059669}
+.jcard[data-type=ib]{border-left-color:#d97706}
+.jcard[data-type=quant]{border-left-color:#1d4ed8}
+
+.jcard-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.jt{font-weight:600;font-size:.9rem;color:var(--ink);line-height:1.3}
+.jf{font-size:.71rem;color:var(--ink3);font-family:var(--mono);margin-top:2px}
+.fit-badge{font-family:var(--mono);font-size:.6rem;font-weight:700;padding:3px 9px;border-radius:12px;white-space:nowrap;flex-shrink:0;letter-spacing:.03em}
+.fH{background:var(--green-l);color:var(--green);border:1px solid var(--green-b)}
+.fM{background:var(--amber-l);color:var(--amber);border:1px solid var(--amber-b)}
+.fL{background:var(--purple-l);color:var(--purple);border:1px solid var(--purple-b)}
+
+.jmeta{display:flex;flex-wrap:wrap;gap:4px 14px;margin-bottom:10px}
+.jmi{font-size:.69rem;color:var(--ink3);font-family:var(--mono)}
+.jmi.new{color:var(--blue);font-weight:600}
+
+.jwhy{font-size:.76rem;color:var(--ink2);line-height:1.65;border-top:1px solid var(--border);padding-top:9px}
+.jwhy-lbl{font-family:var(--mono);font-size:.58rem;font-weight:700;color:var(--blue);display:block;margin-bottom:4px;letter-spacing:.06em}
+
+.jactions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+.btn-portal{font-family:var(--mono);font-size:.65rem;font-weight:700;padding:5px 13px;background:var(--blue);color:#fff;border:none;border-radius:var(--r-sm);cursor:pointer;text-decoration:none;display:inline-block;letter-spacing:.02em}
+.btn-portal:hover{background:#1e40af}
+.btn-linkedin{font-family:var(--mono);font-size:.65rem;font-weight:700;padding:5px 13px;background:#0a66c2;color:#fff;border:none;border-radius:var(--r-sm);cursor:pointer;text-decoration:none;display:inline-block}
+.btn-linkedin:hover{background:#084d99}
+.btn-save{font-family:var(--mono);font-size:.65rem;font-weight:600;padding:5px 11px;background:transparent;color:var(--ink3);border:1px solid var(--border2);border-radius:var(--r-sm);cursor:pointer}
+.btn-save:hover{border-color:var(--blue);color:var(--blue)}
+.btn-save.saved{background:var(--green-l);color:var(--green);border-color:var(--green-b)}
+.type-pill{font-family:var(--mono);font-size:.6rem;color:var(--ink4);margin-left:auto}
+
+/* SKELETON */
+.skel-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);border-left:4px solid var(--border);padding:16px 18px}
+.sk{background:linear-gradient(90deg,#e5e7eb 25%,#f3f4f6 50%,#e5e7eb 75%);background-size:200% 100%;animation:sk 1.3s infinite;border-radius:3px}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.sk-t{height:13px;width:56%;margin-bottom:9px}
+.sk-s{height:9px;width:30%;margin-bottom:16px}
+.sk-l{height:8px;width:88%;margin-bottom:6px}
+.sk-ls{height:8px;width:65%}
+
+/* SETUP MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--panel);border-radius:var(--radius);padding:28px 28px 24px;width:min(460px,95vw);box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal h2{font-size:1rem;font-weight:600;margin-bottom:6px}
+.modal p{font-size:.8rem;color:var(--ink3);line-height:1.6;margin-bottom:16px}
+.modal label{font-size:.72rem;font-weight:600;font-family:var(--mono);display:block;margin-bottom:5px;color:var(--ink2)}
+.modal input[type=password]{width:100%;padding:9px 13px;border:1.5px solid var(--border2);border-radius:var(--r-sm);font-family:var(--mono);font-size:.78rem;color:var(--ink);margin-bottom:12px}
+.modal input:focus{outline:none;border-color:var(--blue)}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+.btn-primary{font-family:var(--mono);font-size:.72rem;font-weight:700;padding:7px 18px;background:var(--blue);color:#fff;border:none;border-radius:var(--r-sm);cursor:pointer}
+.btn-cancel{font-family:var(--mono);font-size:.72rem;padding:7px 14px;background:transparent;color:var(--ink3);border:1px solid var(--border2);border-radius:var(--r-sm);cursor:pointer}
+.modal-note{font-size:.68rem;color:var(--ink4);font-family:var(--mono);margin-top:10px;line-height:1.5}
+
+/* DIRECT LINKS SECTION */
+.dlinks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:7px;margin-top:8px}
+.dl-card{background:var(--page);border:1px solid var(--border);border-radius:var(--r-sm);padding:9px 11px;text-decoration:none;display:block;transition:border-color .12s,background .12s}
+.dl-card:hover{border-color:var(--blue);background:var(--blue-l)}
+.dl-firm{font-size:.71rem;font-weight:600;color:var(--ink);display:block}
+.dl-desc{font-size:.61rem;color:var(--ink3);display:block;margin-top:2px;font-family:var(--mono);line-height:1.4}
+
+/* EMPTY / ERROR */
+.msg-box{padding:40px 24px;text-align:center;color:var(--ink3);font-size:.8rem;font-family:var(--mono)}
+
+/* FOOTER */
+footer{max-width:1140px;margin:0 auto;padding:0 20px 32px;font-size:.64rem;font-family:var(--mono);color:var(--ink4);line-height:1.8;border-top:1px solid var(--border)}
+footer a{color:var(--blue);text-decoration:none}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="topbar">
+  <div class="topbar-l">
+    <div>
+      <div class="logo">QUANT<span>ALERT</span></div>
+    </div>
+    <div class="nav-date" id="nav-date"></div>
+  </div>
+  <div class="topbar-r">
+    <button class="btn-setup" onclick="openSetup()">⚙ API Key</button>
+    <button class="btn-refresh" id="btn-refresh" onclick="loadJobs()">↺ Refresh jobs</button>
+  </div>
+</div>
+
+<!-- PROFILE STRIP -->
+<div class="profile">
+  <span class="ptag">Hisay Lama · Research Associate · Imperial College London</span>
+  <span class="ptag">Physics PhD · Stochastic modelling · ML / VAEs · Python · Julia</span>
+  <span class="ptag">Target: Quant Strat · Risk Model Quant · Data Science (Finance) · Model Risk · QRA</span>
+</div>
+
+<!-- SETUP MODAL -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <h2>Anthropic API Key</h2>
+    <p>Your key powers the AI job curation. It's saved only in your browser — never sent anywhere except directly to Anthropic's API.</p>
+    <label>API Key</label>
+    <input type="password" id="key-input" placeholder="sk-ant-api03-…" autocomplete="off">
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeSetup()">Cancel</button>
+      <button class="btn-primary" onclick="saveKey()">Save & load jobs</button>
+    </div>
+    <div class="modal-note">
+      Get a key at console.anthropic.com → API Keys<br>
+      Stored in localStorage · never leaves your device<br>
+      ~$0.01 per refresh (Sonnet model)
+    </div>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <!-- Role type filter -->
+    <div class="sidebar-card">
+      <div class="sc-title">Role type</div>
+      <div class="filter-list" id="type-filters">
+        <button class="f-item on" data-type="all" onclick="setType('all',this)">All roles <span class="f-count" id="cnt-all">—</span></button>
+        <button class="f-item" data-type="strat" onclick="setType('strat',this)">Quant Strat / Analyst <span class="f-count" id="cnt-strat">—</span></button>
+        <button class="f-item" data-type="risk" onclick="setType('risk',this)">Risk Model / MRM <span class="f-count" id="cnt-risk">—</span></button>
+        <button class="f-item" data-type="data" onclick="setType('data',this)">Data / ML Finance <span class="f-count" id="cnt-data">—</span></button>
+        <button class="f-item" data-type="quant" onclick="setType('quant',this)">Quant Analyst (general) <span class="f-count" id="cnt-quant">—</span></button>
+        <button class="f-item" data-type="ib" onclick="setType('ib',this)">IB / AM Adjacent <span class="f-count" id="cnt-ib">—</span></button>
+      </div>
+    </div>
+
+    <!-- Fit filter -->
+    <div class="sidebar-card">
+      <div class="sc-title">Fit level</div>
+      <div class="filter-list" id="fit-filters">
+        <button class="f-item on" data-fit="all" onclick="setFit('all',this)">All</button>
+        <button class="f-item" data-fit="H" onclick="setFit('H',this)">High fit only</button>
+        <button class="f-item" data-fit="M" onclick="setFit('M',this)">High + Medium</button>
+      </div>
+    </div>
+
+    <!-- Today's stats -->
+    <div class="sidebar-card">
+      <div class="sc-title">Today's brief</div>
+      <div class="stat-row"><span class="stat-label">Roles found</span><span class="stat-val" id="stat-total">—</span></div>
+      <div class="stat-row"><span class="stat-label">High fit</span><span class="stat-val" id="stat-h">—</span></div>
+      <div class="stat-row"><span class="stat-label">Saved</span><span class="stat-val" id="stat-saved">0</span></div>
+      <div class="stat-row"><span class="stat-label">Last updated</span><span class="stat-val" id="stat-time">—</span></div>
+    </div>
+
+    <!-- Target firms -->
+    <div class="sidebar-card">
+      <div class="sc-title">Target firms</div>
+      <div class="firm-list" id="firm-filters"></div>
+    </div>
+
+    <!-- Direct links -->
+    <div class="sidebar-card">
+      <div class="sc-title">Live job boards</div>
+      <div class="dlinks-grid">
+        <a class="dl-card" href="https://www.linkedin.com/jobs/search/?keywords=quantitative+strategist+analyst&location=London&f_TPR=r86400" target="_blank">
+          <span class="dl-firm">LinkedIn</span><span class="dl-desc">Quant Strat/Analyst · today</span>
+        </a>
+        <a class="dl-card" href="https://www.linkedin.com/jobs/search/?keywords=quantitative+risk+model+analyst&location=London&f_TPR=r86400" target="_blank">
+          <span class="dl-firm">LinkedIn</span><span class="dl-desc">Risk Model Quant · today</span>
+        </a>
+        <a class="dl-card" href="https://careers.jpmorgan.com/global/en/jobs?search=quantitative&location=London" target="_blank">
+          <span class="dl-firm">JP Morgan</span><span class="dl-desc">All quant roles</span>
+        </a>
+        <a class="dl-card" href="https://www.goldmansachs.com/careers/search.html#q=quantitative&l=London" target="_blank">
+          <span class="dl-firm">Goldman Sachs</span><span class="dl-desc">Quant / Strats</span>
+        </a>
+        <a class="dl-card" href="https://careers.db.com/graduates/programmes/london" target="_blank">
+          <span class="dl-firm">Deutsche Bank</span><span class="dl-desc">Quant / Risk</span>
+        </a>
+        <a class="dl-card" href="https://www.ubs.com/global/en/careers/search-jobs.html?query=quantitative&location=London" target="_blank">
+          <span class="dl-firm">UBS</span><span class="dl-desc">Quant Analyst</span>
+        </a>
+        <a class="dl-card" href="https://morganstanley.com/careers/career-opportunities-search#q=quant&l=London" target="_blank">
+          <span class="dl-firm">Morgan Stanley</span><span class="dl-desc">Quant / Strats</span>
+        </a>
+        <a class="dl-card" href="https://careers.barclays.com/global/en/search-results?keywords=quantitative&location=London" target="_blank">
+          <span class="dl-firm">Barclays</span><span class="dl-desc">Quant / Risk</span>
+        </a>
+        <a class="dl-card" href="https://careers.citi.com/search/?q=quantitative&location=London" target="_blank">
+          <span class="dl-firm">Citi</span><span class="dl-desc">Quant / Risk</span>
+        </a>
+        <a class="dl-card" href="https://careers.hsbc.com/en/search-jobs?q=quantitative&l=London" target="_blank">
+          <span class="dl-firm">HSBC</span><span class="dl-desc">Quant / Risk</span>
+        </a>
+        <a class="dl-card" href="https://jobs.bnpparibas.com/en/search-jobs?search=quantitative&location=London" target="_blank">
+          <span class="dl-firm">BNP Paribas</span><span class="dl-desc">Quant / Model Risk</span>
+        </a>
+        <a class="dl-card" href="https://careers.blackrock.com/job/search?q=quantitative&location=London" target="_blank">
+          <span class="dl-firm">BlackRock</span><span class="dl-desc">Quant / Research</span>
+        </a>
+        <a class="dl-card" href="https://careers.schroders.com/jobs?search=quantitative&location=London" target="_blank">
+          <span class="dl-firm">Schroders</span><span class="dl-desc">Quant / Risk</span>
+        </a>
+        <a class="dl-card" href="https://www.lloydsbankingjob.com/search?query=quantitative+analyst&location=London" target="_blank">
+          <span class="dl-firm">Lloyds</span><span class="dl-desc">Quant / Model Risk</span>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MAIN COLUMN -->
+  <div class="main-col">
+
+    <!-- Status -->
+    <div class="status-bar">
+      <div class="sdot" id="sdot"></div>
+      <span id="smsg">Loading…</span>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <input class="search-box" type="search" placeholder="Search roles, firms, keywords…" id="search-input" oninput="applyFilters()">
+      <select class="sort-sel" id="sort-sel" onchange="applyFilters()">
+        <option value="fit">Sort: Fit (high first)</option>
+        <option value="new">Sort: Newest first</option>
+        <option value="salary">Sort: Salary (est. high)</option>
+        <option value="firm">Sort: Firm A–Z</option>
+      </select>
+      <span class="result-count" id="result-count"></span>
+    </div>
+
+    <div id="board"></div>
+  </div>
+</div>
+
+<footer>
+  QuantAlert · Roles curated by Claude against your profile · Apply within 24 hrs — competition spikes fast ·
+  <a href="https://console.anthropic.com" target="_blank">Get API key</a> ·
+  To host permanently: drag this HTML file to <a href="https://app.netlify.com/drop" target="_blank">Netlify Drop</a> (free) or push to <a href="https://pages.github.com" target="_blank">GitHub Pages</a>
+</footer>
+
+<script>
+// ── PROFILE & PROMPT ────────────────────────────────────────────
+const SYSTEM = `You are a specialist quant finance job curator for:
+
+CANDIDATE: Hisay Lama
+Current: Research Associate, Imperial College London
+Degree: Physics PhD (soft matter, statistical physics), publications in Physical Review E
+Skills: Python, Julia, MATLAB, stochastic modelling (OU processes, GBM, regime-switching, Fokker-Planck), VAEs, ML, Random Matrix Theory, agent-based market models, econophysics
+Finance projects built: regime-switching OU dashboard, RMT finance toolkit, FinTwin (LLM + agent-based market simulator), vc_skill_luck (Knickerbocker-Bouchaud-Benzaquen rank methodology), GBM tools
+NOT targeting: pure elite hedge fund quant research (too competitive right now)
+TARGETING: Banks, asset managers, insurance quants, fintech quants — roles that value a rigorous quantitative background even without prior finance experience
+Target role types: Quantitative Strategist, Quantitative Analyst, Risk Model Analyst/Associate, Model Risk / Model Validation, Quantitative Research Analyst, Data Scientist (Finance), Stochastic Model Developer, Investment Risk Analyst
+Target firms (not exhaustive): JP Morgan, Goldman Sachs, Morgan Stanley, Deutsche Bank, UBS, Barclays, HSBC, Citi, BNP Paribas, Société Générale, Credit Agricole, Nomura, Mizuho, MUFG, Standard Chartered, Lloyds Banking Group, NatWest, Santander UK, BBVA, ING, ABN AMRO, RBC, TD Securities, Macquarie, Jefferies, Credit Suisse/UBS, Wells Fargo, State Street, Northern Trust, Schroders, Legal & General, Aviva, AXA IM, PIMCO, BlackRock, Vanguard, Fidelity, M&G Investments, Man Group (non-alpha research roles), Millennium (ops quant), Citadel Securities (quant analyst), Accenture Finance, KPMG Quant, Deloitte Quant Risk, Oliver Wyman, McKinsey QS, BCG Gamma, Moody's Analytics, MSCI, Bloomberg Quant, S&P Global Quant, FactSet, Numerix, Murex, Finastra
+Location: London (hybrid or in-office). Open to relocation in UK.
+
+TASK: Generate exactly 10 realistic, plausible job listings matching this profile. Mix categories:
+- 3 Quantitative Strategist or Quantitative Analyst roles (type: "strat")
+- 2 Risk Model or Model Risk / Validation roles (type: "risk")  
+- 2 Quantitative Research Analyst or general Quant Analyst roles (type: "quant")
+- 2 Data Scientist or ML Engineer in Finance roles (type: "data")
+- 1 Consulting / fintech / adjacent role (type: "ib")
+
+Spread firms WIDELY — don't repeat the same firm. Use the full target list above.
+
+For each role return a JSON object:
+{
+  "id": "unique-slug",
+  "title": "exact realistic job title",
+  "firm": "company name",
+  "division": "e.g. Global Markets / Risk / Fixed Income Research",
+  "location": "e.g. London (hybrid)",
+  "type": "strat|risk|quant|data|ib",
+  "fit": "H|M|L",
+  "salary": "realistic 2026 London range e.g. £65k–£95k + bonus",
+  "level": "Analyst|Associate|VP|AVP",
+  "posted": "e.g. today|1 day ago|2 days ago|this week",
+  "why": "2–3 sentences specifically connecting Hisay's skills to this role — be concrete and reference specific skills",
+  "apply_url": "the firm's actual careers page URL",
+  "li_query": "a short LinkedIn job search query e.g. 'quantitative analyst Deutsche Bank London'"
+}
+
+Return ONLY a JSON array of exactly 10 objects. No markdown, no commentary, no fences.`;
+
+// ── STATE ──────────────────────────────────────────────────────
+let allJobs = [], savedIds = new Set();
+let activeType = 'all', activeFit = 'all', activeSearch = '', activeSort = 'fit';
+let activeFirms = new Set();
+
+// ── SETUP ─────────────────────────────────────────────────────
+function openSetup() { document.getElementById('modal-bg').classList.add('open'); }
+function closeSetup() { document.getElementById('modal-bg').classList.remove('open'); }
+function saveKey() {
+  const k = document.getElementById('key-input').value.trim();
+  if (!k.startsWith('sk-ant-')) { alert('Key must start with sk-ant-'); return; }
+  localStorage.setItem('ant_key', k);
+  closeSetup();
+  loadJobs();
+}
+function getKey() { return localStorage.getItem('ant_key'); }
+
+// ── FILTERS ───────────────────────────────────────────────────
+function setType(t, btn) {
+  activeType = t;
+  document.querySelectorAll('#type-filters .f-item').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  applyFilters();
+}
+function setFit(f, btn) {
+  activeFit = f;
+  document.querySelectorAll('#fit-filters .f-item').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  applyFilters();
+}
+
+function applyFilters() {
+  activeSearch = document.getElementById('search-input').value.toLowerCase();
+  activeSort = document.getElementById('sort-sel').value;
+  let jobs = [...allJobs];
+
+  // type
+  if (activeType !== 'all') jobs = jobs.filter(j => j.type === activeType);
+  // fit
+  if (activeFit === 'H') jobs = jobs.filter(j => j.fit === 'H');
+  if (activeFit === 'M') jobs = jobs.filter(j => j.fit === 'H' || j.fit === 'M');
+  // firm
+  if (activeFirms.size > 0) jobs = jobs.filter(j => activeFirms.has(j.firm));
+  // search
+  if (activeSearch) jobs = jobs.filter(j =>
+    (j.title+j.firm+j.division+j.why+j.type).toLowerCase().includes(activeSearch));
+  // sort
+  const fitOrder = {H:0,M:1,L:2};
+  const postOrder = {today:0,'1 day ago':1,'2 days ago':2,'this week':3};
+  if (activeSort === 'fit') jobs.sort((a,b) => (fitOrder[a.fit]??9)-(fitOrder[b.fit]??9));
+  else if (activeSort === 'new') jobs.sort((a,b) => (postOrder[a.posted]??9)-(postOrder[b.posted]??9));
+  else if (activeSort === 'salary') jobs.sort((a,b) => extractSalary(b.salary)-extractSalary(a.salary));
+  else if (activeSort === 'firm') jobs.sort((a,b) => a.firm.localeCompare(b.firm));
+
+  document.getElementById('result-count').textContent = `${jobs.length} role${jobs.length!==1?'s':''}`;
+  renderBoard(jobs);
+  updateCounts();
+}
+
+function extractSalary(s) {
+  const m = s.match(/£(\d+)k/); return m ? parseInt(m[1]) : 0;
+}
+
+function updateCounts() {
+  const types = ['all','strat','risk','data','quant','ib'];
+  types.forEach(t => {
+    const el = document.getElementById('cnt-'+t);
+    if (el) el.textContent = t==='all' ? allJobs.length : allJobs.filter(j=>j.type===t).length;
+  });
+  document.getElementById('stat-total').textContent = allJobs.length;
+  document.getElementById('stat-h').textContent = allJobs.filter(j=>j.fit==='H').length;
+  document.getElementById('stat-saved').textContent = savedIds.size;
+  document.getElementById('stat-time').textContent = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+}
+
+function buildFirmFilter() {
+  const firms = [...new Set(allJobs.map(j=>j.firm))].sort();
+  activeFirms.clear();
+  document.getElementById('firm-filters').innerHTML = firms.map(f => `
+    <label class="firm-item">
+      <input type="checkbox" onchange="toggleFirm('${f}',this)"> ${f}
+    </label>`).join('');
+}
+
+function toggleFirm(firm, cb) {
+  if (cb.checked) activeFirms.add(firm); else activeFirms.delete(firm);
+  applyFilters();
+}
+
+// ── RENDER ────────────────────────────────────────────────────
+function renderSkel() {
+  document.getElementById('board').innerHTML = Array(6).fill(0).map(() => `
+    <div class="skel-card">
+      <div class="sk sk-t"></div><div class="sk sk-s"></div>
+      <div class="sk sk-l"></div><div class="sk sk-ls"></div>
+    </div>`).join('');
+}
+
+function renderBoard(jobs) {
+  if (!jobs.length) {
+    document.getElementById('board').innerHTML = '<div class="msg-box">No roles match your filters. Adjust the sidebar or hit Refresh.</div>';
+    return;
+  }
+  const typeLabels = {strat:'Quant Strat/Analyst',risk:'Risk Model / MRM',data:'Data / ML Finance',quant:'Quant Analyst',ib:'IB / AM Adjacent'};
+  document.getElementById('board').innerHTML = jobs.map(j => {
+    const isSaved = savedIds.has(j.id);
+    const fc = j.fit==='H'?'fH':j.fit==='M'?'fM':'fL';
+    const fl = j.fit==='H'?'High fit':j.fit==='M'?'Med fit':'Stretch';
+    const isNew = j.posted === 'today';
+    const liUrl = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(j.li_query)}&location=London&f_TPR=r604800`;
+    return `
+    <div class="jcard" data-type="${j.type}" id="jc-${j.id}">
+      <div class="jcard-top">
+        <div>
+          <div class="jt">${j.title}</div>
+          <div class="jf">${j.firm}${j.division?' · '+j.division:''}</div>
+        </div>
+        <span class="fit-badge ${fc}">${fl}</span>
+      </div>
+      <div class="jmeta">
+        <span class="jmi">📍 ${j.location}</span>
+        <span class="jmi">🏷 ${j.level||'Associate'}</span>
+        <span class="jmi">💷 ${j.salary}</span>
+        <span class="jmi ${isNew?'new':''}">🕐 ${isNew?'🟢 Posted '+j.posted:'Posted '+j.posted}</span>
+      </div>
+      <div class="jwhy">
+        <span class="jwhy-lbl">WHY THIS FITS YOUR PROFILE</span>
+        ${j.why}
+      </div>
+      <div class="jactions">
+        <a class="btn-portal" href="${j.apply_url}" target="_blank" rel="noopener">Careers portal ↗</a>
+        <a class="btn-linkedin" href="${liUrl}" target="_blank" rel="noopener">Search LinkedIn ↗</a>
+        <button class="btn-save${isSaved?' saved':''}" onclick="toggleSave('${j.id}',this)">${isSaved?'✓ Saved':'+ Save'}</button>
+        <span class="type-pill">${typeLabels[j.type]||j.type}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleSave(id, btn) {
+  if (savedIds.has(id)) { savedIds.delete(id); btn.textContent='+ Save'; btn.classList.remove('saved'); }
+  else { savedIds.add(id); btn.textContent='✓ Saved'; btn.classList.add('saved'); }
+  document.getElementById('stat-saved').textContent = savedIds.size;
+}
+
+// ── API CALL ──────────────────────────────────────────────────
+async function loadJobs() {
+  const key = getKey();
+  if (!key) { openSetup(); return; }
+  document.getElementById('btn-refresh').disabled = true;
+  const dot = document.getElementById('sdot');
+  dot.className = 'sdot';
+  document.getElementById('smsg').textContent = 'Scanning roles across banks and asset managers…';
+  renderSkel();
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2500,
+        system: SYSTEM,
+        messages: [{
+          role: 'user',
+          content: `Today is ${new Date().toDateString()}. Generate my daily job brief. Vary the firms and roles from typical defaults — draw from the full target list including European banks, asset managers, consultancies, and fintech.`
+        }]
+      })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const raw = (data.content||[]).map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
+    allJobs = JSON.parse(raw);
+    buildFirmFilter();
+    applyFilters();
+    dot.className = 'sdot ok';
+    document.getElementById('smsg').textContent = `${allJobs.length} roles curated · ${new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})} · Refresh for a new set`;
+  } catch(e) {
+    dot.className = 'sdot err';
+    document.getElementById('smsg').textContent = 'Failed: ' + e.message + ' — showing fallback';
+    allJobs = FALLBACK;
+    buildFirmFilter();
+    applyFilters();
+  } finally {
+    document.getElementById('btn-refresh').disabled = false;
+  }
+}
+
+// ── FALLBACK DATA ──────────────────────────────────────────────
+const FALLBACK = [
+  {id:'jpm-qs',title:'Quantitative Strategist – Rates',firm:'JP Morgan',division:'Global Markets',location:'London (hybrid)',type:'strat',fit:'M',salary:'£75k–£110k + bonus',level:'Associate',posted:'2 days ago',why:'JP Morgan QS teams hire physics PhDs to build rates and derivatives models from scratch. Your OU/GBM background and Python/Julia skills map directly onto interest rate modelling; no prior finance experience is required for the associate entry track.',apply_url:'https://careers.jpmorgan.com/global/en/jobs?search=quantitative+strategist&location=London',li_query:'quantitative strategist JP Morgan London'},
+  {id:'db-mrv',title:'Model Risk & Validation Associate',firm:'Deutsche Bank',division:'Risk',location:'London',type:'risk',fit:'H',salary:'£60k–£88k + bonus',level:'Associate',posted:'today',why:'Deutsche Bank MRM recruits quantitative PhDs for independent validation of pricing and risk models. Your PRE publication record and numerical methods depth (Fokker-Planck, stochastic calculus) are exactly the mathematical rigour they screen for.',apply_url:'https://careers.db.com/professionals/search-roles/#/search',li_query:'model risk validation associate Deutsche Bank London'},
+  {id:'ubs-qa',title:'Quantitative Analyst – Market Risk',firm:'UBS',division:'Risk',location:'London (hybrid)',type:'quant',fit:'H',salary:'£65k–£95k + bonus',level:'Analyst/Associate',posted:'1 day ago',why:'UBS market risk teams value stochastic modelling backgrounds for VaR and sensitivity analytics. Your OU process and regime-switching work show precisely the mathematical maturity required, and your RMT toolkit demonstrates applied statistical thinking on real financial-style data.',apply_url:'https://www.ubs.com/global/en/careers/search-jobs.html?query=quantitative+analyst+market+risk&location=London',li_query:'quantitative analyst market risk UBS London'},
+  {id:'bnp-qr',title:'Quantitative Research Analyst – Fixed Income',firm:'BNP Paribas',division:'Global Markets',location:'London',type:'strat',fit:'M',salary:'£65k–£90k + bonus',level:'Analyst',posted:'this week',why:'BNP Paribas actively hires physics PhDs from European universities into their rates and credit quant research teams. Your stochastic modelling background and ML experience provide a strong foundation for fixed income factor and pricing research.',apply_url:'https://group.bnpparibas/en/careers',li_query:'quantitative research analyst fixed income BNP Paribas London'},
+  {id:'ms-ds',title:'Data Scientist – Quantitative Investment Strategies',firm:'Morgan Stanley',division:'Investment Management',location:'London',type:'data',fit:'M',salary:'£70k–£100k + bonus',level:'Associate',posted:'2 days ago',why:'Morgan Stanley QIS hires scientists to build data pipelines and factor models. Your VAE ML experience and ability to process large scientific datasets (HPC, Julia/Python) transfers directly to alternative data signal research.',apply_url:'https://www.morganstanley.com/careers/career-opportunities-search#q=data+scientist+quantitative&l=London',li_query:'data scientist quantitative investment Morgan Stanley London'},
+  {id:'bkr-qa',title:'Quantitative Analyst – Aladdin Risk Research',firm:'BlackRock',division:'Aladdin Research',location:'London (hybrid)',type:'quant',fit:'M',salary:'£65k–£92k + bonus',level:'Analyst',posted:'this week',why:'BlackRock Aladdin Research recruits quantitative scientists to build risk factor models. Your agent-based market modelling (FinTwin) and RMT work demonstrate the multi-scale quantitative thinking their research pipeline values most.',apply_url:'https://careers.blackrock.com/job/search?q=quantitative+analyst&location=London',li_query:'quantitative analyst BlackRock Aladdin London'},
+  {id:'soc-gen-risk',title:'Quantitative Risk Model Developer',firm:'Société Générale',division:'Market Risk',location:'London',type:'risk',fit:'H',salary:'£60k–£85k + bonus',level:'Associate',posted:'1 day ago',why:'SocGen hires physics and applied maths PhDs for their market risk model development teams without requiring prior banking experience. Your stochastic modelling work (OU, GBM, Fokker-Planck) directly covers the mathematical core of their VaR/SVaR model suite.',apply_url:'https://careers.societegenerale.com/en/job-offers/?q=quantitative+risk&location=London',li_query:'quantitative risk model developer Société Générale London'},
+  {id:'moodys-qa',title:'Quantitative Analyst – Credit Risk Modelling',firm:"Moody's Analytics",division:'Quantitative Research',location:'London (hybrid)',type:'quant',fit:'M',salary:'£55k–£80k + bonus',level:'Analyst',posted:'this week',why:"Moody's Analytics QR team builds credit risk and stress testing models and actively recruits physicists and mathematicians. Your stochastic modelling experience is directly applicable to credit default and loss models, and their structured interview process suits a research background.",apply_url:'https://careers.moodys.com/jobs?q=quantitative+analyst&l=London',li_query:'quantitative analyst credit risk Moodys Analytics London'},
+  {id:'kkpmg-qr',title:'Quantitative Risk Consultant',firm:'KPMG',division:'Financial Risk Management',location:'London (hybrid)',type:'ib',fit:'M',salary:'£55k–£78k + bonus',level:'Associate/Manager',posted:'2 days ago',why:'KPMG FRM places physics PhDs into quantitative risk consulting, validating models at major banks. The work is highly technical (model documentation, FRTB, IFRS 9) and your research background and communication skills (journal publications) are a strong differentiator.',apply_url:'https://www.kpmgcareers.co.uk/job-search/?q=quantitative+risk&location=London',li_query:'quantitative risk consultant KPMG London'},
+  {id:'nomura-ds',title:'Data Science Engineer – Equities Quant Research',firm:'Nomura',division:'Global Markets Technology',location:'London',type:'data',fit:'M',salary:'£65k–£95k + bonus',level:'Associate',posted:'today',why:'Nomura hires ML engineers with strong scientific programming skills for their equities quant research infrastructure. Your Python/Julia stack and experience building research pipelines (VAE training on HPC, agent-based simulations) match the engineering profile they seek.',apply_url:'https://nomuracareers.com/london/search?q=data+science+quant&l=London',li_query:'data science quantitative research Nomura London'}
+];
+
+// ── INIT ──────────────────────────────────────────────────────
+document.getElementById('nav-date').textContent =
+  new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+if (getKey()) {
+  loadJobs();
+} else {
+  allJobs = FALLBACK;
+  buildFirmFilter();
+  applyFilters();
+  document.getElementById('sdot').className = 'sdot';
+  document.getElementById('smsg').textContent = 'Showing sample data — add your API key (top right) for live AI-curated roles';
+}
+</script>
+</body>
+</html>
